@@ -95,7 +95,7 @@ class Auth {
         }
         
         // Admin can manage anyone
-        if ($_SESSION['user_role'] === 'Admin') {
+        if ($_SESSION['user_role'] === ['Admin', 'IT Manager']) {
             return true;
         }
         

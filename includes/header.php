@@ -137,7 +137,7 @@ $page_title = $page_title ?? 'IT Request Management System';
                             </a>
                         </li>
                         
-                        <?php if (hasRole(['Admin', 'Manager'])): ?>
+                        <?php if (hasRole(['Admin', 'IT Manager', 'Manager'])): ?>
                         <li class="nav-item">
                             <a class="nav-link <?php echo (strpos($_SERVER['PHP_SELF'], 'users') !== false) ? 'active' : ''; ?>" 
                                href="<?php echo USERS_URL; ?>">
