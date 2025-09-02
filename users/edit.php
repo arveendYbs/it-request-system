@@ -35,8 +35,8 @@ if (!$user) {
 $can_edit = false;
 if (hasRole(['Admin'])) {
     $can_edit = true;
-} elseif ($current_user['role'] === 'Manager' && $user['reporting_manager_id'] == $current_user['id']) {
-    $can_edit = true; // Manager can edit reporting employees
+//} elseif ($current_user['role'] === 'Manager' && $user['reporting_manager_id'] == $current_user['id']) {
+//   $can_edit = true; // Manager can edit reporting employees
 }
 
 if (!$can_edit) {

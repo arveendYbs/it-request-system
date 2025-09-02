@@ -287,10 +287,11 @@ include '../includes/header.php';
                                            class="btn btn-outline-primary" title="View">
                                             <i class="bi bi-eye"></i>
                                         </a>
-                                        
-                                        <?php if (hasRole(['Admin']) || ($current_user['role'] === 'Manager' && $user['reporting_manager_id'] == $current_user['id'])): ?>
-                                            <a href="edit.php?id=<?php echo $user['id']; ?>" 
-                                               class="btn btn-outline-secondary" title="Edit">
+                                        <!--if (hasRole(['Admin']) || ($current_user['role'] === 'Manager' && $user['reporting_manager_id'] == $current_user['id'])): 
+ -->
+                                        <?php if (hasRole(['Admin'])): ?>
+                                                <a href="edit.php?id=<?php echo $user['id']; ?>" 
+                                                class="btn btn-outline-secondary" title="Edit">
                                                 <i class="bi bi-pencil"></i>
                                             </a>
                                         <?php endif; ?>

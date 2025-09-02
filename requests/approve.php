@@ -20,13 +20,15 @@ if (empty($request_id) || !is_numeric($request_id)) {
 $request = fetchOne($pdo, "
     SELECT r.*, u.name as user_name, u.email as user_email, u.reporting_manager_id,
            c.name as category_name, sc.name as subcategory_name,
-           co.name as company_name, d.name as department_name
+           co.name as company_name, d.name as department_name,
+           m.role as manager_role
     FROM requests r
     JOIN users u ON r.user_id = u.id
     JOIN categories c ON r.category_id = c.id
     JOIN subcategories sc ON r.subcategory_id = sc.id
     JOIN companies co ON u.company_id = co.id
     JOIN departments d ON u.department_id = d.id
+    LEFT JOIN users m ON u.reporting_manager_id = m.id
     WHERE r.id = ?
 ", [$request_id]);
 
@@ -78,14 +80,32 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     
                 } elseif ($current_user['role'] === 'IT Manager' || $current_user['role'] === 'Admin') {
                     // IT Manager final approval
-                    executeQuery($pdo, "
-                        UPDATE requests 
-                        SET status = 'Approved',
-                            approved_by_it_manager_id = ?,
-                            approved_by_it_manager_date = NOW(),
-                            updated_at = NOW()
-                        WHERE id = ?
-                    ", [$current_user['id'], $request_id]);
+                    // Check if IT Manager is approving as direct manager or final approver
+                    if ($current_user['role'] === 'IT Manager' && 
+                        $request['reporting_manager_id'] == $current_user['id'] && 
+                        $request['status'] === 'Pending IT HOD') {
+                        // IT Manager is the direct reporting manager - give final approval
+                        executeQuery($pdo, "
+                            UPDATE requests 
+                            SET status = 'Approved',
+                                approved_by_manager_id = ?,
+                                approved_by_manager_date = NOW(),
+                                approved_by_it_manager_id = ?,
+                                approved_by_it_manager_date = NOW(),
+                                updated_at = NOW()
+                            WHERE id = ?
+                        ", [$current_user['id'], $current_user['id'], $request_id]);
+                    } else {
+                        // Regular IT Manager final approval
+                        executeQuery($pdo, "
+                            UPDATE requests 
+                            SET status = 'Approved',
+                                approved_by_it_manager_id = ?,
+                                approved_by_it_manager_date = NOW(),
+                                updated_at = NOW()
+                            WHERE id = ?
+                        ", [$current_user['id'], $request_id]);
+                    }
                     
                     $_SESSION['success_message'] = 'Request approved successfully!';
                 }

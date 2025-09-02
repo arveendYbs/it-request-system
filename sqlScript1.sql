@@ -184,3 +184,42 @@ INSERT INTO `users` (`name`, `email`, `password`, `role`, `department_id`, `comp
 ('John Doe', 'john@facebook.com', '$2y$10$92IXUNpkjO0rOQ5byMi.Ye4oKoEa3Ro9llC/.og/at2.uheWG/igi', 'User', 2, 1, 3);
 
 COMMIT;
+
+
+
+-- Add Sites table
+CREATE TABLE `sites` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `name` varchar(255) NOT NULL,
+  `description` text,
+  `address` text,
+  `created_at` timestamp NOT NULL DEFAULT current_timestamp(),
+  `updated_at` timestamp NOT NULL DEFAULT current_timestamp() ON UPDATE current_timestamp(),
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `name` (`name`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Add site_id to users table
+ALTER TABLE `users` ADD COLUMN `site_id` int(11) DEFAULT NULL AFTER `reporting_manager_id`;
+ALTER TABLE `users` ADD KEY `fk_user_site` (`site_id`);
+ALTER TABLE `users` ADD CONSTRAINT `fk_user_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL;
+
+-- Add site_id to requests table
+ALTER TABLE `requests` ADD COLUMN `site_id` int(11) DEFAULT NULL AFTER `user_id`;
+ALTER TABLE `requests` ADD KEY `fk_request_site` (`site_id`);
+ALTER TABLE `requests` ADD CONSTRAINT `fk_request_site` FOREIGN KEY (`site_id`) REFERENCES `sites` (`id`) ON DELETE SET NULL;
+
+-- Insert sample sites
+INSERT INTO `sites` (`name`, `description`, `address`) VALUES
+('Headquarters', 'Main office building', '123 Main Street, Downtown'),
+('Office 1', 'Branch office location 1', '456 Business Ave, North District'),
+('Office 2', 'Branch office location 2', '789 Corporate Blvd, South District'),
+('Warehouse', 'Storage and logistics facility', '321 Industrial Road, Warehouse District'),
+('Remote', 'For remote workers', 'Various locations');
+
+ALTER TABLE users
+ADD COLUMN site_id INT NULL AFTER password,
+ADD CONSTRAINT fk_users_sites FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL;
+ALTER TABLE requests
+ADD COLUMN site_id INT NULL AFTER user_id,
+ADD CONSTRAINT fk_requests_sites FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL;

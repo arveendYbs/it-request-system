@@ -13,9 +13,51 @@ $current_user = getCurrentUser();
 // Get dashboard statistics
 $stats = [];
 
-// Total requests
-$stats['total_requests'] = fetchOne($pdo, "SELECT COUNT(*) as count FROM requests")['count'];
+$stats_base_query = "";
+$stats_params = [];
 
+if ($current_user['role'] === 'User') {
+    $stats_base_query = " WHERE r.user_id = ?";
+    $stats_params = [$current_user['id']];
+} elseif ($current_user['role'] === 'Manager') {
+    $stats_base_query = " WHERE (r.user_id = ? OR u.reporting_manager_id = ?)";
+    $stats_params = [$current_user['id'], $current_user['id']];
+}
+
+// Admin and IT Manager see all (no WHERE clause)
+
+// Total requests
+$total_query = "SELECT COUNT(*) as count FROM requests r";
+if ($stats_base_query) {
+    $total_query .= " JOIN users u ON r.user_id = u.id" . $stats_base_query;
+}
+$stats['total_requests'] = fetchOne($pdo, $total_query, $stats_params)['count'];
+
+// Total requests
+//$stats['total_requests'] = fetchOne($pdo, "SELECT COUNT(*) as count FROM requests")['count'];
+
+
+// Requests by status
+$status_query = "
+    SELECT status, COUNT(*) as count 
+    FROM requests r";
+if ($stats_base_query) {
+    $status_query .= " JOIN users u ON r.user_id = u.id" . $stats_base_query;
+}
+$status_query .= " GROUP BY status";
+$status_stats = fetchAll($pdo, $status_query, $stats_params);
+
+// Requests by category
+$category_query = "
+    SELECT c.name, COUNT(r.id) as count 
+    FROM categories c 
+    LEFT JOIN requests r ON c.id = r.category_id";
+if ($stats_base_query) {
+    $category_query .= " LEFT JOIN users u ON r.user_id = u.id" . $stats_base_query;
+}
+$category_query .= " GROUP BY c.id, c.name ORDER BY count DESC";
+$category_stats = fetchAll($pdo, $category_query, $stats_params);
+/*
 // Requests by status
 $status_stats = fetchAll($pdo, "
     SELECT status, COUNT(*) as count 
@@ -31,8 +73,9 @@ $category_stats = fetchAll($pdo, "
     GROUP BY c.id, c.name 
     ORDER BY count DESC
 ");
-
+*/
 // Recent requests (last 10)
+/*
 $recent_requests = fetchAll($pdo, "
     SELECT r.*, u.name as user_name, c.name as category_name, sc.name as subcategory_name
     FROM requests r
@@ -42,6 +85,27 @@ $recent_requests = fetchAll($pdo, "
     ORDER BY r.created_at DESC
     LIMIT 10
 ");
+*/
+$recent_requests_query = "
+    SELECT r.*, u.name as user_name, c.name as category_name, sc.name as subcategory_name
+    FROM requests r
+    JOIN users u ON r.user_id = u.id
+    JOIN categories c ON r.category_id = c.id
+    JOIN subcategories sc ON r.subcategory_id = sc.id
+    ";
+
+if ($current_user['role'] === 'User'){
+    $recent_requests_query .= " WHERE r.user_id = " . $current_user['id'];
+
+} elseif ($current_user['role'] === 'Manager'){
+    $recent_requests_query .= " WHERE (r.user_id = " . $current_user['id'] . " OR u.reporting_manager_id = " . $current_user['id'] . ")";
+
+}
+
+$recent_requests_query .= " ORDER BY r.created_at DESC LIMIT 10";
+$recent_requests = fetchAll($pdo, $recent_requests_query);
+
+
 
 // User-specific stats based on role
 if ($current_user['role'] === 'User') {
@@ -65,6 +129,7 @@ if ($current_user['role'] === 'User') {
         WHERE status IN ('Approved by Manager', 'Pending IT HOD')
     ")['count'];
 }
+
 
 include 'includes/header.php';
 ?>

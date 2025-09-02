@@ -63,7 +63,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Determine initial status based on reporting structure
             $user = fetchOne($pdo, "SELECT reporting_manager_id FROM users WHERE id = ?", [$current_user['id']]);
             $initial_status = $user['reporting_manager_id'] ? 'Pending Manager' : 'Pending IT HOD';
+            $initial_status = 'Pending Manager'; // Default status
             
+            if ($user['reporting_manager_id']) {
+                // User has a reporting manager
+                if ($user['manager_role'] === 'IT Manager') {
+                    // If reporting manager is IT Manager, skip regular manager approval
+                    $initial_status = 'Pending IT HOD';
+                } else {
+                    // Regular manager approval needed first
+                    $initial_status = 'Pending Manager';
+                }
+            } else {
+                // No reporting manager, goes directly to IT Manager
+                $initial_status = 'Pending IT HOD';
+            }
             // Insert request
             $request_id = executeQuery($pdo, "
                 INSERT INTO requests (title, description, category_id, subcategory_id, user_id, status, created_at)

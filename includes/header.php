@@ -153,6 +153,12 @@ $page_title = $page_title ?? 'IT Request Management System';
                                 <i class="bi bi-building me-2"></i>Departments
                             </a>
                         </li>
+                      <li class="nav-item">
+                            <a class="nav-link <?php echo (strpos($_SERVER['PHP_SELF'], 'sites') !== false) ? 'active' : ''; ?>" 
+                               href="/it-request-system/sites/">
+                                <i class="bi bi-geo-alt me-2"></i>Sites
+                            </a>
+                        </li>
                         
                         <li class="nav-item">
                             <a class="nav-link <?php echo (strpos($_SERVER['PHP_SELF'], 'companies') !== false) ? 'active' : ''; ?>" 
