@@ -42,7 +42,8 @@ $form_data = [
     'title' => $request['title'],
     'description' => $request['description'],
     'category_id' => $request['category_id'],
-    'subcategory_id' => $request['subcategory_id']
+    'subcategory_id' => $request['subcategory_id'], 
+    'site_id' => $request['site_id']
 ];
 
 // Handle form submission
@@ -51,7 +52,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'title' => trim($_POST['title'] ?? ''),
         'description' => trim($_POST['description'] ?? ''),
         'category_id' => $_POST['category_id'] ?? '',
-        'subcategory_id' => $_POST['subcategory_id'] ?? ''
+        'subcategory_id' => $_POST['subcategory_id'] ?? '',
+        'site_id' => $_POST['site_id'] ?? ''
     ];
     
     // Validation
@@ -90,13 +92,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Update request
             executeQuery($pdo, "
                 UPDATE requests 
-                SET title = ?, description = ?, category_id = ?, subcategory_id = ?, updated_at = NOW()
+                SET title = ?, description = ?, category_id = ?, subcategory_id = ?, site_id = ?, updated_at = NOW()
                 WHERE id = ?
             ", [
                 $form_data['title'],
                 $form_data['description'],
                 $form_data['category_id'],
                 $form_data['subcategory_id'],
+                $form_data['site_id'] ?: null,
                 $request_id
             ]);
             
@@ -172,7 +175,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Get categories for dropdown
 $categories = fetchAll($pdo, "SELECT id, name FROM categories ORDER BY name");
-
+$sites = fetchAll($pdo, "SELECT id, name FROM sites ORDER BY name ");
 // Get current attachments
 $attachments = fetchAll($pdo, "
     SELECT * FROM request_attachments WHERE request_id = ? ORDER BY uploaded_at
@@ -251,6 +254,19 @@ include '../includes/header.php';
                                 </select>
                             </div>
                         </div>
+                    </div>
+                      <div class="mb-3">
+                        <label for="site_id" class="form-label">Site/Location</label>
+                        <select class="form-select" id="site_id" name="site_id">
+                            <option value="">Select Site (Optional)</option>
+                            <?php foreach ($sites as $site): ?>
+                                <option value="<?php echo $site['id']; ?>" 
+                                        <?php echo ($form_data['site_id'] == $site['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($site['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text">Select the site/location where this request applies</div>
                     </div>
                     
                     <div class="mb-3">

@@ -15,7 +15,8 @@ $form_data = [
     'title' => '',
     'description' => '',
     'category_id' => '',
-    'subcategory_id' => ''
+    'subcategory_id' => '',
+    'site_id' => ''
 ];
 
 // Handle form submission
@@ -24,7 +25,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'title' => trim($_POST['title'] ?? ''),
         'description' => trim($_POST['description'] ?? ''),
         'category_id' => $_POST['category_id'] ?? '',
-        'subcategory_id' => $_POST['subcategory_id'] ?? ''
+        'subcategory_id' => $_POST['subcategory_id'] ?? '', 
+        'site_id' => $_POST['site_id'] ?? ''
     ];
     
     // Validation
@@ -61,9 +63,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $pdo->beginTransaction();
             
             // Determine initial status based on reporting structure
-            $user = fetchOne($pdo, "SELECT reporting_manager_id FROM users WHERE id = ?", [$current_user['id']]);
-            $initial_status = $user['reporting_manager_id'] ? 'Pending Manager' : 'Pending IT HOD';
-            $initial_status = 'Pending Manager'; // Default status
+            $user = fetchOne($pdo, 
+            "SELECT reporting_manager_id, m.role as manager_role
+            FROM users u
+            LEFT JOIN users m ON u.reporting_manager_id = m.id
+            WHERE id = ?
+            ", [$current_user['id']]);
+            
+            //$initial_status = $user['reporting_manager_id'] ? 'Pending Manager' : 'Pending IT HOD';
+            // $initial_status = 'Pending HOD'; // Default status
             
             if ($user['reporting_manager_id']) {
                 // User has a reporting manager
@@ -72,7 +80,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     $initial_status = 'Pending IT HOD';
                 } else {
                     // Regular manager approval needed first
-                    $initial_status = 'Pending Manager';
+                    $initial_status = 'Pending HOD';
                 }
             } else {
                 // No reporting manager, goes directly to IT Manager
@@ -80,14 +88,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             // Insert request
             $request_id = executeQuery($pdo, "
-                INSERT INTO requests (title, description, category_id, subcategory_id, user_id, status, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, NOW())
+                INSERT INTO requests (title, description, category_id, subcategory_id, user_id, site_id, status, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
             ", [
                 $form_data['title'],
                 $form_data['description'],
                 $form_data['category_id'],
                 $form_data['subcategory_id'],
                 $current_user['id'],
+                $form_data['site_id'],
                 $initial_status
             ]);
             
@@ -158,6 +167,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 // Get categories for dropdown
 $categories = fetchAll($pdo, "SELECT id, name FROM categories ORDER BY name");
+$sites = fetchAll($pdo, "SELECT id, name FROM sites ORDER BY name");
 
 include '../includes/header.php';
 ?>
@@ -232,6 +242,21 @@ include '../includes/header.php';
                         </div>
                     </div>
                     
+                    <div class="mb-3">
+                        <label for="site_id" class="form-label">Site/Location</label>
+                        <select class="form-select" id="site_id" name="site_id">
+                            <option value="">Select Site (Optional)</option>
+                            <?php foreach ($sites as $site): ?>
+                                <option value="<?php echo $site['id']; ?>"
+                                    <?php echo ($form_data['site_id'] == $site['id']) ? 'selected' : ''; ?>>
+                                <?php echo htmlspecialchars($site['name']); ?>
+                            </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text">Select the site where this request applies</div>
+                    </div>
+
+
                     <div class="mb-3">
                         <label for="attachments" class="form-label">Attachments</label>
                         <input type="file" class="form-control" id="attachments" name="attachments[]" 

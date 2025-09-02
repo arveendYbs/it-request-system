@@ -21,6 +21,7 @@ $request = fetchOne($pdo, "
     SELECT r.*, u.name as user_name, u.email as user_email,
            c.name as category_name, sc.name as subcategory_name,
            co.name as company_name, d.name as department_name,
+           s.name as site_name,
            am.name as approved_by_manager_name,
            aim.name as approved_by_it_manager_name,
            rb.name as rejected_by_name
@@ -30,6 +31,7 @@ $request = fetchOne($pdo, "
     JOIN subcategories sc ON r.subcategory_id = sc.id
     JOIN companies co ON u.company_id = co.id
     JOIN departments d ON u.department_id = d.id
+    LEFT JOIN sites s ON r.site_id = s.id
     LEFT JOIN users am ON r.approved_by_manager_id = am.id
     LEFT JOIN users aim ON r.approved_by_it_manager_id = aim.id
     LEFT JOIN users rb ON r.rejected_by_id = rb.id
@@ -105,7 +107,7 @@ include '../includes/header.php';
                 <h5 class="card-title mb-0">Request Details</h5>
                 <?php
                 $status_class = [
-                    'Pending Manager' => 'warning',
+                    'Pending HOD' => 'warning',
                     'Approved by Manager' => 'info',
                     'Pending IT HOD' => 'warning',
                     'Approved' => 'success',
@@ -133,9 +135,26 @@ include '../includes/header.php';
                             <small class="text-muted"><?php echo htmlspecialchars($request['subcategory_name']); ?></small>
                         </p>
                     </div>
+
+                    <div class="col-md-6">
+                        <h6 class="text-muted">Site/Location</h6>
+                        <p>
+                            <?php if ($request['site_name']): ?>
+                                <span class="badge bg-info"><?php echo htmlspecialchars($request['site_name']); ?></span>
+                            <?php else: ?>
+                                <small class="text-muted">No site specified</small>
+                            <?php endif; ?>
+                        </p>
+                    </div>
+                
                     <div class="col-md-6">
                         <h6 class="text-muted">Created Date</h6>
                         <p><?php echo date('M j, Y g:i A', strtotime($request['created_at'])); ?></p>
+                    </div>
+            
+                 <div class="col-md-6">
+                        <h6 class="text-muted">Last Updated</h6>
+                        <p><?php echo date('M j, Y g:i A', strtotime($request['updated_at'])); ?></p>
                     </div>
                 </div>
                 

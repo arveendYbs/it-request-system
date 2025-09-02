@@ -223,3 +223,23 @@ ADD CONSTRAINT fk_users_sites FOREIGN KEY (site_id) REFERENCES sites(id) ON DELE
 ALTER TABLE requests
 ADD COLUMN site_id INT NULL AFTER user_id,
 ADD CONSTRAINT fk_requests_sites FOREIGN KEY (site_id) REFERENCES sites(id) ON DELETE SET NULL;
+
+
+ALTER TABLE `requests`
+MODIFY COLUMN `status` ENUM(
+  'Pending HOD',
+  'Approved by Manager',
+  'Pending IT HOD',
+  'Approved',
+  'Rejected'
+) NOT NULL DEFAULT 'Pending HOD';
+-- Step 1: Update existing 'Pending Manager' to 'Pending HOD'
+UPDATE requests SET status = 'Pending HOD' WHERE status = 'Pending Manager';
+
+-- Step 2: Modify the enum to use new values
+ALTER TABLE requests MODIFY COLUMN status 
+ENUM('Pending HOD','Approved by Manager','Pending IT HOD','Approved','Rejected') 
+NOT NULL DEFAULT 'Pending HOD';
+
+-- Verify the changes
+SELECT status, COUNT(*) as count FROM requests GROUP BY stat

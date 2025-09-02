@@ -5,7 +5,7 @@
  */
 
 require_once '../includes/auth.php';
-requireRole(['Admin', 'Manager']);
+requireRole(['Admin', 'IT Manager']);
 
 $page_title = 'Users Management';
 $current_user = getCurrentUser();

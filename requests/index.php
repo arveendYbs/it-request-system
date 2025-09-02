@@ -116,7 +116,7 @@ $companies = fetchAll($pdo, "SELECT id, name FROM companies ORDER BY name");
 $departments = fetchAll($pdo, "SELECT id, name FROM departments ORDER BY name");
 
 $status_options = [
-    'Pending Manager',
+    'Pending HOD',
     'Approved by Manager', 
     'Pending IT HOD',
     'Approved',
@@ -294,7 +294,7 @@ include '../includes/header.php';
                                 <td>
                                     <?php
                                     $status_class = [
-                                        'Pending Manager' => 'warning',
+                                        'Pending HOD' => 'warning',
                                         'Approved by Manager' => 'info',
                                         'Pending IT HOD' => 'warning',
                                         'Approved' => 'success',

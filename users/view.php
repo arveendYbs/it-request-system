@@ -19,11 +19,12 @@ if (empty($user_id) || !is_numeric($user_id)) {
 // Get user details
 $user = fetchOne($pdo, "
     SELECT u.*, d.name as department_name, c.name as company_name, 
-           m.name as manager_name, m.email as manager_email
+           m.name as manager_name, m.email as manager_email, s.name as site_name
     FROM users u
     JOIN departments d ON u.department_id = d.id
     JOIN companies c ON u.company_id = c.id
     LEFT JOIN users m ON u.reporting_manager_id = m.id
+    LEFT JOIN sites s ON u.site_id = s.id
     WHERE u.id = ?
 ", [$user_id]);
 
@@ -172,6 +173,10 @@ include '../includes/header.php';
                 <div class="mb-3">
                     <strong>Company:</strong><br>
                     <span class="text-muted"><?php echo htmlspecialchars($user['company_name']); ?></span>
+                </div>
+                <div class="mb-3">
+                    <strong>Sites:</strong><br>
+                    <span class="text-muted"><?php echo htmlspecialchars($user['site_name']); ?></span>
                 </div>
                 
                 <?php if ($user['manager_name']): ?>

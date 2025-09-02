@@ -170,7 +170,7 @@ include 'includes/header.php';
         $my_total = array_sum(array_column($my_requests, 'count'));
         $my_pending = 0;
         foreach ($my_requests as $req) {
-            if (in_array($req['status'], ['Pending Manager', 'Approved by Manager', 'Pending IT HOD'])) {
+            if (in_array($req['status'], ['Pending HOD', 'Approved by Manager', 'Pending IT HOD'])) {
                 $my_pending += $req['count'];
             }
         }
@@ -315,7 +315,7 @@ include 'includes/header.php';
                                 <td>
                                     <?php
                                     $status_class = [
-                                        'Pending Manager' => 'warning',
+                                        'Pending HOD' => 'warning',
                                         'Approved by Manager' => 'info',
                                         'Pending IT HOD' => 'warning',
                                         'Approved' => 'success',

@@ -168,16 +168,23 @@ class Auth {
         // Manager can approve if they are the reporting manager and status is pending manager
         if ($_SESSION['user_role'] === 'Manager' && 
             $request['reporting_manager_id'] == $_SESSION['user_id'] &&
-            $request['status'] === 'Pending Manager') {
+            $request['status'] === 'Pending HOD') {
             return true;
         }
         
-        // IT Manager can approve if status is "Approved by Manager" or "Pending IT HOD"
-        if ($_SESSION['user_role'] === 'IT Manager' && 
-            in_array($request['status'], ['Approved by Manager', 'Pending IT HOD'])) {
-            return true;
+        // IT Manager can approve if:
+        // 1. Status is "Approved by Manager" or "Pending IT HOD", OR
+        // 2. They are the direct reporting manager and status is "Pending IT HOD"
+        if ($_SESSION['user_role'] === 'IT Manager') {
+            if (in_array($request['status'], ['Approved by Manager', 'Pending IT HOD'])) {
+                return true;
+            }
+            // IT Manager can also approve if they are the direct reporting manager
+            if ($request['reporting_manager_id'] == $_SESSION['user_id'] && 
+                $request['status'] === 'Pending IT HOD') {
+                return true;
+            }
         }
-        
         return false;
     }
     

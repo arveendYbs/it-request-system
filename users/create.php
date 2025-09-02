@@ -18,6 +18,7 @@ $form_data = [
     'department_id' => '',
     'company_id' => '',
     'reporting_manager_id' => '',
+    'site_id' => '',
     'is_active' => 1,
     'password' => ''
 ];
@@ -31,6 +32,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'department_id' => $_POST['department_id'] ?? '',
         'company_id' => $_POST['company_id'] ?? '',
         'reporting_manager_id' => $_POST['reporting_manager_id'] ?? null,
+        'site_id' => $_POST['site_id'] ?? null,
         'is_active' => isset($_POST['is_active']) ? 1 : 0,
         'password' => $_POST['password'] ?? ''
     ];
@@ -99,8 +101,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $hashed_password = password_hash($form_data['password'], PASSWORD_DEFAULT);
             
             executeQuery($pdo, "
-                INSERT INTO users (name, email, password, role, department_id, company_id, reporting_manager_id, is_active, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, NOW())
+                INSERT INTO users (name, email, password, role, department_id, company_id, reporting_manager_id, site_id, is_active, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
             ", [
                 $form_data['name'],
                 $form_data['email'],
@@ -109,6 +111,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $form_data['department_id'],
                 $form_data['company_id'],
                 $form_data['reporting_manager_id'] ?: null,
+                $form_data['site_id'] ?: null,
                 $form_data['is_active']
             ]);
             
@@ -125,7 +128,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Get dropdown options
 $companies = fetchAll($pdo, "SELECT id, name FROM companies ORDER BY name");
 $departments = fetchAll($pdo, "SELECT id, name, company_id FROM departments ORDER BY name");
-
+$sites = fetchAll($pdo, "SELECT id, name FROM sites ORDER BY name");
 // Get potential managers
 $managers = fetchAll($pdo, "
     SELECT id, name, email, role 
@@ -262,6 +265,21 @@ include '../includes/header.php';
                             <?php endforeach; ?>
                         </select>
                         <div class="form-text">Select a manager if this user reports to someone.</div>
+                    </div>
+
+                      
+                    <div class="mb-3">
+                        <label for="site_id" class="form-label">Site/Location</label>
+                        <select class="form-select" id="site_id" name="site_id">
+                            <option value="">No Site</option>
+                            <?php foreach ($sites as $site): ?>
+                                <option value="<?php echo $site['id']; ?>" 
+                                        <?php echo ($form_data['site_id'] == $site['id']) ? 'selected' : ''; ?>>
+                                    <?php echo htmlspecialchars($site['name']); ?>
+                                </option>
+                            <?php endforeach; ?>
+                        </select>
+                        <div class="form-text">Select the primary site/location for this user.</div>
                     </div>
                     
                     <div class="mb-3">

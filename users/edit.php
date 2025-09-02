@@ -5,7 +5,7 @@
  */
 
 require_once '../includes/auth.php';
-requireRole(['Admin', 'Manager']);
+requireRole(['Admin', 'IT Manager']);
 
 $user_id = $_GET['id'] ?? '';
 $current_user = getCurrentUser();
@@ -18,10 +18,11 @@ if (empty($user_id) || !is_numeric($user_id)) {
 
 // Get user details
 $user = fetchOne($pdo, "
-    SELECT u.*, d.name as department_name, c.name as company_name
+    SELECT u.*, d.name as department_name, c.name as company_name, s.name as site_name
     FROM users u
     JOIN departments d ON u.department_id = d.id
     JOIN companies c ON u.company_id = c.id
+    LEFT JOIN sites s ON u.site_id = s.id
     WHERE u.id = ?
 ", [$user_id]);
 
@@ -53,6 +54,7 @@ $form_data = [
     'department_id' => $user['department_id'],
     'company_id' => $user['company_id'],
     'reporting_manager_id' => $user['reporting_manager_id'],
+    'site_id' => $user['site_id'],
     'is_active' => $user['is_active']
 ];
 
@@ -65,6 +67,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         'department_id' => $_POST['department_id'] ?? '',
         'company_id' => $_POST['company_id'] ?? '',
         'reporting_manager_id' => $_POST['reporting_manager_id'] ?? null,
+        'site_id' => $_POST['site_id'] ?? '',
         'is_active' => isset($_POST['is_active']) ? 1 : 0,
         'password' => $_POST['password'] ?? ''
     ];
@@ -128,6 +131,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 'department_id = ?',
                 'company_id = ?',
                 'reporting_manager_id = ?',
+                'site_id = ?',
                 'is_active = ?',
                 'updated_at = NOW()'
             ];
@@ -139,6 +143,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $form_data['department_id'],
                 $form_data['company_id'],
                 $form_data['reporting_manager_id'] ?: null,
+                $form_data['site_id'] ?: null,
                 $form_data['is_active']
             ];
             
@@ -172,7 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 // Get dropdown options
 $companies = fetchAll($pdo, "SELECT id, name FROM companies ORDER BY name");
 $departments = fetchAll($pdo, "SELECT id, name, company_id FROM departments ORDER BY name");
-
+$sites = fetchAll($pdo, "SELECT id, name FROM sites ORDER BY name");
 // Get potential managers (exclude current user and their subordinates)
 $managers = fetchAll($pdo, "
     SELECT id, name, email, role 
@@ -317,6 +322,22 @@ include '../includes/header.php';
                             </div>
                         </div>
                     </div>
+
+                     <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="site_id" class="form-label">Sites / location</label>
+                                <select class="form-select" id="site_id" name="site_id">
+                                    <option value="">Sites (Optional)</option>
+                                    <?php foreach ($sites as $site): ?>
+                                        <option value="<?php echo $site['id']; ?>" 
+                                                <?php echo ($form_data['site_id'] == $site['id']) ? 'selected' : ''; ?>>
+                                            <?php echo htmlspecialchars($site['name']); ?>
+                                        </option>
+                                    <?php endforeach; ?>
+                                </select>
+                            </div>
+                        </div>
+                    
                     
                     <div class="mb-3">
                         <label for="password" class="form-label">New Password</label>
