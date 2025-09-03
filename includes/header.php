@@ -187,7 +187,14 @@ $page_title = $page_title ?? 'IT Request Management System';
             </nav>
 
             <!-- Main content -->
-            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+             <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4 main-content">
+                <?php if (isset($_SESSION['debug_info'])): ?>
+                    <div class="alert alert-info alert-dismissible fade show" role="alert">
+                        <strong>🐛 DEBUG:</strong> <?php echo $_SESSION['debug_info']; unset($_SESSION['debug_info']); ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+                
                 <?php if (isset($_SESSION['success_message'])): ?>
                     <div class="alert alert-success alert-dismissible fade show" role="alert">
                         <?php echo htmlspecialchars($_SESSION['success_message']); unset($_SESSION['success_message']); ?>

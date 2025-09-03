@@ -64,15 +64,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             
             // Determine initial status based on reporting structure
             $user = fetchOne($pdo, 
-            "SELECT reporting_manager_id, m.role as manager_role
+            "SELECT u.reporting_manager_id, m.role as manager_role
             FROM users u
             LEFT JOIN users m ON u.reporting_manager_id = m.id
-            WHERE id = ?
+            WHERE u.id = ?
             ", [$current_user['id']]);
             
             //$initial_status = $user['reporting_manager_id'] ? 'Pending Manager' : 'Pending IT HOD';
-            // $initial_status = 'Pending HOD'; // Default status
-            
+            $initial_status = 'Pending HOD'; // Default status
+           // var_dump($user); // for testing and read role
+           // exit;
+
             if ($user['reporting_manager_id']) {
                 // User has a reporting manager
                 if ($user['manager_role'] === 'IT Manager') {
