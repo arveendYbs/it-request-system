@@ -355,7 +355,7 @@ include '../includes/header.php';
                     <strong>Status:</strong><br>
                     <?php
                     $status_class = [
-                        'Pending Manager' => 'warning',
+                        'Pending HOD' => 'info',
                         'Approved by Manager' => 'info',
                         'Pending IT HOD' => 'warning',
                         'Approved' => 'success',

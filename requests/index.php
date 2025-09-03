@@ -294,7 +294,7 @@ include '../includes/header.php';
                                 <td>
                                     <?php
                                     $status_class = [
-                                        'Pending HOD' => 'warning',
+                                        'Pending HOD' => 'info',
                                         'Approved by Manager' => 'info',
                                         'Pending IT HOD' => 'warning',
                                         'Approved' => 'success',

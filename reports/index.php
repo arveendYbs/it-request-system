@@ -123,7 +123,7 @@ $departments = fetchAll($pdo, "SELECT id, name FROM departments ORDER BY name");
 $sites = fetchAll($pdo, "SELECT id, name FROM sites ORDER BY name");
 
 $status_options = [
-    'Pending Manager',
+    'Pending HOD',
     'Approved by Manager', 
     'Pending IT HOD',
     'Approved',

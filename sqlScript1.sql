@@ -243,3 +243,27 @@ NOT NULL DEFAULT 'Pending HOD';
 
 -- Verify the changes
 SELECT status, COUNT(*) as count FROM requests GROUP BY stat
+
+-- SQL to update existing database for new status flow
+-- Run this to update your database schema and data
+
+-- Step 1: Add new columns for remarks
+ALTER TABLE requests 
+ADD COLUMN manager_remarks TEXT AFTER approved_by_manager_date,
+ADD COLUMN it_manager_remarks TEXT AFTER approved_by_it_manager_date;
+
+-- Step 2: Update existing 'Approved by Manager' to 'Pending IT HOD'
+UPDATE requests SET status = 'Pending IT HOD' WHERE status = 'Approved by Manager';
+
+-- Step 3: Modify the enum to remove 'Approved by Manager'
+ALTER TABLE requests MODIFY COLUMN status 
+ENUM('Pending HOD','Pending IT HOD','Approved','Rejected') 
+NOT NULL DEFAULT 'Pending HOD';
+
+-- Step 4: Verify the changes
+SELECT 'Status Distribution' as Info;
+SELECT status, COUNT(*) as count FROM requests GROUP BY status;
+
+SELECT 'Requests with Remarks' as Info;
+SELECT COUNT(*) as requests_with_manager_remarks FROM requests WHERE manager_remarks IS NOT NULL AND manager_remarks != '';
+SELECT COUNT(*) as requests_with_it_manager_remarks FROM requests WHERE it_manager_remarks IS NOT NULL AND it_manager_remarks != '';

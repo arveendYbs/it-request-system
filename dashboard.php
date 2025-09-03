@@ -120,7 +120,7 @@ if ($current_user['role'] === 'User') {
         SELECT COUNT(*) as count 
         FROM requests r
         JOIN users u ON r.user_id = u.id
-        WHERE u.reporting_manager_id = ? AND r.status = 'Pending Manager'
+        WHERE u.reporting_manager_id = ? AND r.status = 'Pending HOD'
     ", [$current_user['id']])['count'];
 } elseif ($current_user['role'] === 'IT Manager') {
     $pending_it_approvals = fetchOne($pdo, "
@@ -196,7 +196,7 @@ include 'includes/header.php';
                     <div class="d-flex justify-content-between">
                         <div>
                             <h4 class="card-title"><?php echo $my_pending; ?></h4>
-                            <p class="card-text">Pending</p>
+                            <p class="card-text">Pending HOD</p>
                         </div>
                         <div class="align-self-center">
                             <i class="bi bi-clock" style="font-size: 2rem;"></i>
@@ -315,7 +315,7 @@ include 'includes/header.php';
                                 <td>
                                     <?php
                                     $status_class = [
-                                        'Pending HOD' => 'warning',
+                                        'Pending HOD' => 'info',
                                         'Approved by Manager' => 'info',
                                         'Pending IT HOD' => 'warning',
                                         'Approved' => 'success',
@@ -357,7 +357,6 @@ new Chart(statusCtx, {
             backgroundColor: [
                 '#ffc107', // warning - pending
                 '#17a2b8', // info - approved by manager
-                '#fd7e14', // warning - pending IT
                 '#28a745', // success - approved
                 '#dc3545'  // danger - rejected
             ],

@@ -51,6 +51,7 @@ $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $action = $_POST['action'] ?? '';
     $remarks = trim($_POST['remarks'] ?? '');
+    $approval_remarks = trim($_POST['approval_remarks'] ?? ''); // approval remarks 
     
     if (!in_array($action, ['approve', 'reject'])) {
         $errors[] = 'Invalid action.';
@@ -69,12 +70,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     // Manager approval
                     executeQuery($pdo, "
                         UPDATE requests 
-                        SET status = 'Approved by Manager',
+                        SET status = 'Pending IT HOD',
                             approved_by_manager_id = ?,
                             approved_by_manager_date = NOW(),
+                            manager_remarks = ?, 
                             updated_at = NOW()
                         WHERE id = ?
-                    ", [$current_user['id'], $request_id]);
+                    ", [$current_user['id'], $approval_remarks, $request_id]);
                     
                     $_SESSION['success_message'] = 'Request approved successfully! It will now be reviewed by IT Manager.';
                     
@@ -92,9 +94,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 approved_by_manager_date = NOW(),
                                 approved_by_it_manager_id = ?,
                                 approved_by_it_manager_date = NOW(),
+                                manager_remarks = ?,
+                                it_manager_remarks = ?,
                                 updated_at = NOW()
                             WHERE id = ?
-                        ", [$current_user['id'], $current_user['id'], $request_id]);
+                        ", [$current_user['id'], $current_user['id'], $request['manager_remarks'], $approval_remarks, $request_id]); // Note the changes here
                     } else {
                         // Regular IT Manager final approval
                         executeQuery($pdo, "
@@ -102,9 +106,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             SET status = 'Approved',
                                 approved_by_it_manager_id = ?,
                                 approved_by_it_manager_date = NOW(),
-                                updated_at = NOW()
+                                updated_at = NOW(),
+                                it_manager_remarks = ?
                             WHERE id = ?
-                        ", [$current_user['id'], $request_id]);
+                        ", [$current_user['id'], $approval_remarks, $request_id]);
                     }
                     
                     $_SESSION['success_message'] = 'Request approved successfully!';
@@ -261,6 +266,17 @@ include '../includes/header.php';
                         </div>
                     </div>
                     
+
+                    <div class="mb-4" id="approvalRemarksSection" style="display: none;">
+                        <label for="approval_remarks" class="form-label">Approval Remarks (Optional)</label>
+                        <textarea class="form-control" id="approval_remarks" name="approval_remarks" rows="4" 
+                                placeholder="Add any notes or context for the requester..."></textarea>
+                        <div class="form-text">
+                            <i class="bi bi-info-circle me-1"></i>
+                            These remarks will be visible to the requester.
+                        </div>
+                    </div>
+
                     <div class="mb-4" id="remarksSection" style="display: none;">
                         <label for="remarks" class="form-label">Rejection Remarks <span class="text-danger">*</span></label>
                         <textarea class="form-control" id="remarks" name="remarks" rows="4" 
@@ -415,6 +431,7 @@ include '../includes/header.php';
 document.addEventListener('DOMContentLoaded', function() {
     const approveRadio = document.getElementById('approve');
     const rejectRadio = document.getElementById('reject');
+    const approvalRemarksSection = document.getElementById('approvalRemarksSection'); // New: Reference to the approval remarks section
     const remarksSection = document.getElementById('remarksSection');
     const remarksTextarea = document.getElementById('remarks');
     const submitBtn = document.getElementById('submitBtn');
@@ -422,13 +439,15 @@ document.addEventListener('DOMContentLoaded', function() {
     function toggleRemarks() {
         if (rejectRadio.checked) {
             remarksSection.style.display = 'block';
+            approvalRemarksSection.style.display = 'none'; // Hide the approval remarks
             remarksTextarea.required = true;
             submitBtn.innerHTML = '<i class="bi bi-x-lg me-1"></i>Reject Request';
             submitBtn.className = 'btn btn-danger';
-        } else {
+        } else if (approveRadio.checked) {
             remarksSection.style.display = 'none';
-            remarksTextarea.required = false;
-            remarksTextarea.value = '';
+            approvalRemarksSection.style.display = 'block'; // Show the approval remarks
+            remarksTextarea.required = false; // Rejection remarks are no longer required
+            remarksTextarea.value = ''; // Clear rejection remarks
             submitBtn.innerHTML = '<i class="bi bi-check-lg me-1"></i>Approve Request';
             submitBtn.className = 'btn btn-success';
         }
@@ -437,6 +456,9 @@ document.addEventListener('DOMContentLoaded', function() {
     approveRadio.addEventListener('change', toggleRemarks);
     rejectRadio.addEventListener('change', toggleRemarks);
     
+    // Call the function on page load to set the initial state
+    toggleRemarks();
+
     // Confirmation before submit
     document.getElementById('approvalForm').addEventListener('submit', function(e) {
         const action = document.querySelector('input[name="action"]:checked').value;

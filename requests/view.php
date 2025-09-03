@@ -107,8 +107,8 @@ include '../includes/header.php';
                 <h5 class="card-title mb-0">Request Details</h5>
                 <?php
                 $status_class = [
-                    'Pending HOD' => 'warning',
-                    'Approved by Manager' => 'info',
+                    'Pending HOD' => 'info',
+                  //  'Approved by Manager' => 'info',
                     'Pending IT HOD' => 'warning',
                     'Approved' => 'success',
                     'Rejected' => 'danger'
@@ -157,8 +157,44 @@ include '../includes/header.php';
                         <p><?php echo date('M j, Y g:i A', strtotime($request['updated_at'])); ?></p>
                     </div>
                 </div>
-                
-                <?php if ($request['rejection_remarks']): ?>
+<!-- 
+                <?php if (!empty($request['manager_remarks'])): ?>
+                <div class="alert alert-info">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-check-circle me-2"></i>Manager Approval Remarks
+                    </h6>
+                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($request['manager_remarks'])); ?></p>
+                    <?php if (!empty($request['approved_by_manager_name']) || !empty($request['approved_by_manager_date'])): ?>
+                        <hr>
+                        <small class="text-muted">
+                            Approved by <?php echo htmlspecialchars($request['approved_by_manager_name'] ?? 'Manager'); ?>
+                            <?php if (!empty($request['approved_by_manager_date'])): ?>
+                                on <?php echo date('M j, Y g:i A', strtotime($request['approved_by_manager_date'])); ?>
+                            <?php endif; ?>
+                        </small>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?>
+
+            <?php if (!empty($request['it_manager_remarks'])): ?>
+                <div class="alert alert-success">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-shield-check me-2"></i>IT Manager Approval Remarks
+                    </h6>
+                    <p class="mb-0"><?php echo nl2br(htmlspecialchars($request['it_manager_remarks'])); ?></p>
+                    <?php if (!empty($request['approved_by_it_manager_name']) || !empty($request['approved_by_it_manager_date'])): ?>
+                        <hr>
+                        <small class="text-muted">
+                            Approved by <?php echo htmlspecialchars($request['approved_by_it_manager_name'] ?? 'IT Manager'); ?>
+                            <?php if (!empty($request['approved_by_it_manager_date'])): ?>
+                                on <?php echo date('M j, Y g:i A', strtotime($request['approved_by_it_manager_date'])); ?>
+                            <?php endif; ?>
+                        </small>
+                    <?php endif; ?>
+                </div>
+            <?php endif; ?> -->
+
+                <!-- <?php if ($request['rejection_remarks']): ?>
                     <div class="alert alert-danger">
                         <h6 class="alert-heading">
                             <i class="bi bi-x-circle me-2"></i>Rejection Remarks
@@ -172,7 +208,61 @@ include '../includes/header.php';
                             </small>
                         <?php endif; ?>
                     </div>
+                <?php endif; ?> -->
+                <?php if ($request['manager_remarks']): ?>
+                    <div class="card border-primary mb-3">
+                        <div class="card-header bg-primary text-white">
+                            <i class="bi bi-check-circle me-2"></i> Manager Approval Remarks
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text"><?php echo nl2br(htmlspecialchars($request['manager_remarks'])); ?></p>
+                            <?php if ($request['approved_by_manager_name']): ?>
+                                <hr>
+                                <small class="text-muted">
+                                    Approved by <strong><?php echo htmlspecialchars($request['approved_by_manager_name']); ?></strong><br>
+                                    on <?php echo date('M j, Y g:i A', strtotime($request['approved_by_manager_date'])); ?>
+                                </small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
                 <?php endif; ?>
+
+                <?php if ($request['it_manager_remarks']): ?>
+                    <div class="card border-success mb-3">
+                        <div class="card-header bg-success text-white">
+                            <i class="bi bi-check2-circle me-2"></i> IT Manager Approval Remarks
+                        </div>
+                        <div class="card-body">
+                            <p class="card-text"><?php echo nl2br(htmlspecialchars($request['it_manager_remarks'])); ?></p>
+                            <?php if ($request['approved_by_it_manager_name']): ?>
+                                <hr>
+                                <small class="text-muted">
+                                    Approved by <strong><?php echo htmlspecialchars($request['approved_by_it_manager_name']); ?></strong><br>
+                                    on <?php echo date('M j, Y g:i A', strtotime($request['approved_by_it_manager_date'])); ?>
+                                </small>
+                            <?php endif; ?>
+                        </div>
+                    </div>
+                <?php endif; ?>
+
+                <?php if ($request['rejection_remarks']): ?>
+                <div class="card border-danger mb-3">
+                    <div class="card-header bg-danger text-white">
+                        <i class="bi bi-x-circle me-2"></i> Rejection Remarks
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text"><?php echo nl2br(htmlspecialchars($request['rejection_remarks'])); ?></p>
+                        <?php if ($request['rejected_by_name']): ?>
+                            <hr>
+                            <small class="text-muted">
+                                Rejected by <strong><?php echo htmlspecialchars($request['rejected_by_name']); ?></strong><br>
+                                on <?php echo date('M j, Y g:i A', strtotime($request['rejected_date'])); ?>
+                            </small>
+                        <?php endif; ?>
+                    </div>
+                </div>
+            <?php endif; ?>
+
             </div>
         </div>
         
@@ -313,6 +403,7 @@ include '../includes/header.php';
                             </div>
                         </div>
                     <?php endif; ?>
+                
                     
                     <!-- Rejection -->
                     <?php if ($request['status'] === 'Rejected'): ?>
@@ -329,6 +420,7 @@ include '../includes/header.php';
                             </div>
                         </div>
                     <?php endif; ?>
+                    
                 </div>
             </div>
         </div>
@@ -380,3 +472,6 @@ include '../includes/header.php';
 </style>
 
 <?php include '../includes/footer.php'; ?>
+<script>
+
+</script>

@@ -122,7 +122,7 @@
     <footer class="footer mt-auto py-3 bg-light">
         <div class="container text-center">
             <span class="text-muted">
-                &copy; <?php echo date('Y'); ?> IT Request Management System. All rights reserved.
+                &copy; <?php echo date('Y'); ?> IT Request Management System. by AP
             </span>
         </div>
     </footer>
