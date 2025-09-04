@@ -35,9 +35,9 @@ $can_delete = false;
 
 if (hasRole(['Admin'])) {
     $can_delete = true; // Admin can delete any request
-} elseif ($request['user_id'] == $current_user['id'] && $request['status'] === 'Pending Manager') {
+} elseif ($request['user_id'] == $current_user['id'] && $request['status'] === 'Pending HOD') {
     $can_delete = true; // Owner can delete only if status is Pending HOD (before first approval) // Change to Pending HOD
-}
+} //elseif ($request['user_id'] == $current_user['id'] && $request['reporting_manager_id'] == )
 
 if (!$can_delete) {
     $_SESSION['error_message'] = 'You do not have permission to delete this request. Only request owners can delete requests before first approval, or administrators can delete any request.';

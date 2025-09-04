@@ -30,9 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     ];
     
     // Validation
-    if (empty($form_data['title'])) {
-        $errors[] = 'Title is required.';
-    }
+   
     
     if (empty($form_data['description'])) {
         $errors[] = 'Description is required.';
@@ -57,7 +55,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $errors[] = 'Invalid subcategory selection.';
         }
     }
-    
+    // Fetch category and subcategory names
+    $category = fetchOne($pdo, "SELECT name FROM categories WHERE id = ?", [$form_data['category_id']]);
+    $subcategory = fetchOne($pdo, "SELECT name FROM subcategories WHERE id = ?", [$form_data['subcategory_id']]);
+
+    // Generate title
+    $title = "Request for {$category['name']}: {$subcategory['name']}";
+
     if (empty($errors)) {
         try {
             $pdo->beginTransaction();
@@ -93,7 +97,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 INSERT INTO requests (title, description, category_id, subcategory_id, user_id, site_id, status, created_at)
                 VALUES (?, ?, ?, ?, ?, ?, ?, NOW())
             ", [
-                $form_data['title'],
+                $title, // use 
                 $form_data['description'],
                 $form_data['category_id'],
                 $form_data['subcategory_id'],
@@ -204,12 +208,13 @@ include '../includes/header.php';
             </div>
             <div class="card-body">
                 <form method="POST" enctype="multipart/form-data" id="requestForm">
-                    <div class="mb-3">
-                        <label for="title" class="form-label">Title <span class="text-danger">*</span></label>
+                   <div class="mb-3">
+                        <label for="title" class="form-label">Title</label>
                         <input type="text" class="form-control" id="title" name="title" 
-                               value="<?php echo htmlspecialchars($form_data['title']); ?>" 
-                               placeholder="Brief description of your request" required>
+                            value="<?php echo htmlspecialchars($form_data['title']); ?>" 
+                            readonly>
                     </div>
+
                     
                     <div class="mb-3">
                         <label for="description" class="form-label">Description <span class="text-danger">*</span></label>
