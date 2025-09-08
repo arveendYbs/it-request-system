@@ -160,6 +160,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $pdo->commit();
+             // Send email notifications
+            try {
+                require_once '../includes/email_service.php';
+                $emailService = new EmailService($pdo);
+                $emailService->sendRequestCreatedNotification($request_id);
+            } catch (Exception $e) {
+                error_log("Email notification error: " . $e->getMessage());
+                // Don't fail the request creation if email fails
+            }
             $_SESSION['success_message'] = 'Request created successfully!';
             header('Location: view.php?id=' . $request_id);
             exit();

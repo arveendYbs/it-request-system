@@ -130,6 +130,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
             
             $pdo->commit();
+             // Send email notifications
+            try {
+                require_once '../includes/email_service.php';
+                $emailService = new EmailService($pdo);
+                
+                if ($action === 'approve') {
+                    if ($current_user['role'] === 'Manager') {
+                        $emailService->sendManagerApprovalNotification($request_id);
+                    } elseif ($current_user['role'] === 'IT Manager' || $current_user['role'] === 'Admin') {
+                        $emailService->sendITApprovalNotification($request_id);
+                    }
+                } else { // reject
+                    $emailService->sendRejectionNotification($request_id);
+                }
+            } catch (Exception $e) {
+                error_log("Email notification error: " . $e->getMessage());
+                // Don't fail the approval process if email fails
+            }
             header('Location: view.php?id=' . $request_id);
             exit();
             
